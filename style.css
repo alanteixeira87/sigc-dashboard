@@ -238,7 +238,7 @@ button {
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  grid-template-columns: 1fr;
   gap: 22px;
   align-items: stretch;
   margin-bottom: 26px;
@@ -298,24 +298,26 @@ button {
 }
 
 .import-panel {
-  padding: 18px;
+  width: 100%;
+  padding: 20px;
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .drop-zone {
-  min-height: 260px;
+  min-height: 220px;
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 12px;
-  padding: 24px;
+  gap: 14px;
+  padding: 28px;
   border-radius: calc(var(--radius-xl) - 6px);
   border: 1px dashed rgba(148, 163, 184, 0.35);
   background:
     radial-gradient(circle at top, rgba(124, 92, 255, 0.12), transparent 42%),
     rgba(255, 255, 255, 0.02);
   transition: 0.2s ease;
+  text-align: center;
 }
 
 .drop-zone.dragover {
@@ -339,9 +341,10 @@ button {
 }
 
 .import-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  width: min(760px, 100%);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 12px;
   justify-content: center;
 }
 
@@ -391,6 +394,7 @@ button {
   border-radius: 14px;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.03);
+  text-align: center;
 }
 
 .section {
@@ -907,6 +911,10 @@ tbody tr:hover {
   .quick-filters-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .import-actions {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+  }
 }
 
 @media (max-width: 640px) {
@@ -943,6 +951,15 @@ tbody tr:hover {
   .metrics-grid,
   .filters-grid,
   .quick-filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .drop-zone {
+    min-height: 240px;
+    padding: 22px;
+  }
+
+  .import-actions {
     grid-template-columns: 1fr;
   }
 }
