@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Validação de Planilhas</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-expanded="true" aria-label="Recolher sidebar">
+        <span class="sidebar-toggle-icon" aria-hidden="true">◀</span>
+      </button>
+      <div class="brand">
+        <div class="brand-mark">DV</div>
+        <div>
+          <strong>Dashboard Validador</strong>
+          <span>Importação inteligente offline</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-link active" data-scroll-target="overviewSection"><span class="nav-label">Visão geral</span></button>
+        <button class="nav-link" data-scroll-target="criticalSection"><span class="nav-label">Marcas Críticas</span></button>
+        <button class="nav-link" data-scroll-target="tableSection"><span class="nav-label">Tabela Analítica</span></button>
+        <button class="nav-link" data-scroll-target="validationSection"><span class="nav-label">Validação</span></button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p>CSV, Excel e JSON são tratados localmente no navegador.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">MVP offline para testes operacionais</p>
+          <h1>Importe planilhas e veja a leitura pronta para análise em segundos.</h1>
+          <p class="hero-text">
+            A base é reconhecida, normalizada e transformada em métricas, gráficos, filtros e tabela detalhada sem backend.
+          </p>
+        </div>
+
+        <div class="import-panel">
+          <div class="drop-zone" id="dropZone">
+            <input id="fileInput" type="file" accept=".csv,.xlsx,.xls,.json" multiple hidden>
+            <p class="drop-title">Arraste arquivos ou selecione no computador</p>
+            <p class="drop-subtitle">CSV, Excel e JSON com leitura 100% local.</p>
+            <div class="import-actions">
+              <button class="primary-btn" id="selectFilesBtn" type="button">Selecionar arquivos</button>
+              <button class="secondary-btn" id="loadSampleBtn" type="button">Carregar exemplo</button>
+              <button class="secondary-btn" id="loadCloudBtn" type="button">Carregar base</button>
+              <button class="secondary-btn" id="saveCloudBtn" type="button" disabled>Salvar base</button>
+            </div>
+          </div>
+          <div class="import-status" id="importStatus" aria-live="polite">
+            Nenhuma planilha importada ainda.
+          </div>
+        </div>
+      </header>
+
+      <section class="section overview" id="overviewSection">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Resumo</p>
+            <h2>Cards principais</h2>
+          </div>
+          <div class="section-actions section-heading-actions">
+            <button class="secondary-btn" id="exportCsvBtn" type="button" disabled>Exportar filtrados para CSV</button>
+            <button class="secondary-btn" id="resetFiltersBtn" type="button" disabled>Limpar filtros</button>
+            <button class="secondary-btn section-collapse-btn" type="button" data-collapse-target="overviewSection" aria-expanded="true">Recolher</button>
+          </div>
+        </div>
+        <div class="metrics-grid" id="summaryCards"></div>
+      </section>
+
+      <section class="section filters-panel" id="filtersSection">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Filtros</p>
+            <h2>Refine a leitura em tempo real</h2>
+          </div>
+          <div class="section-heading-actions">
+            <button class="secondary-btn section-collapse-btn" type="button" data-collapse-target="filtersSection" aria-expanded="true">Recolher</button>
+          </div>
+        </div>
+        <div class="filters-grid" id="filtersGrid">
+          <label class="field">
+            <span>Data inicial</span>
+            <input type="date" id="filterDateFrom">
+          </label>
+          <label class="field">
+            <span>Data final</span>
+            <input type="date" id="filterDateTo">
+          </label>
+          <label class="field">
+            <span>Mês</span>
+            <select id="filterMonth"><option value="">Todos</option></select>
+          </label>
+          <label class="field">
+            <span>Ciclo</span>
+            <select id="filterCycle"><option value="">Todos</option></select>
+          </label>
+          <label class="field">
+            <span>Marca</span>
+            <select id="filterBrand"><option value="">Todas</option></select>
+          </label>
+          <label class="field">
+            <span>QA responsável</span>
+            <select id="filterQa"><option value="">Todos</option></select>
+          </label>
+          <label class="field">
+            <span>Cliente</span>
+            <select id="filterClient"><option value="">Todos</option></select>
+          </label>
+          <label class="field">
+            <span>Status Teste</span>
+            <select id="filterStatus">
+              <option value="">Todos</option>
+              <option value="OK">OK</option>
+              <option value="Não OK">Não OK</option>
+              <option value="DCR">DCR</option>
+              <option value="Status não mapeado">Status não mapeado</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Resultado Teste</span>
+            <select id="filterStage"><option value="">Todas</option></select>
+          </label>
+          <label class="field">
+            <span>Longa duração</span>
+            <select id="filterLonga">
+              <option value="">Todos</option>
+              <option value="true">Sim</option>
+              <option value="false">Não</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Plano de Testes</span>
+            <input type="search" id="filterPlan" placeholder="Buscar plano">
+          </label>
+          <label class="field">
+            <span>Teste</span>
+            <input type="search" id="filterTest" placeholder="Buscar teste">
+          </label>
+          <label class="field">
+            <span>Id Teste</span>
+            <input type="search" id="filterId" placeholder="Buscar id">
+          </label>
+          <label class="field">
+            <span>Marca - busca livre</span>
+            <input type="search" id="filterBrandSearch" placeholder="Filtrar por nome">
+          </label>
+          <label class="field">
+            <span>QA - busca livre</span>
+            <input type="search" id="filterQaSearch" placeholder="Filtrar por nome">
+          </label>
+          <label class="field">
+            <span>Ordenar por</span>
+            <select id="sortBy">
+              <option value="dataExecucao">Data</option>
+              <option value="ciclo">Ciclo</option>
+              <option value="statusTeste">Status</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Direção</span>
+            <select id="sortDirection">
+              <option value="desc">Descendente</option>
+              <option value="asc">Ascendente</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section class="section quick-filters-panel" id="quickFiltersSection">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Filtros rápidos</p>
+            <h2>Use os gráficos como atalho de navegação</h2>
+          </div>
+          <div class="section-heading-actions">
+            <div class="section-hint">Clique em uma barra ou refine abaixo.</div>
+            <button class="secondary-btn section-collapse-btn" type="button" data-collapse-target="quickFiltersSection" aria-expanded="true">Recolher</button>
+          </div>
+        </div>
+        <div class="quick-filters-grid">
+          <label class="field">
+            <span>Ciclo</span>
+            <select id="quickFilterCycle"><option value="">Todos</option></select>
+          </label>
+          <label class="field">
+            <span>Marca</span>
+            <select id="quickFilterBrand"><option value="">Todas</option></select>
+          </label>
+          <label class="field">
+            <span>QA</span>
+            <select id="quickFilterQa"><option value="">Todos</option></select>
+          </label>
+          <label class="field">
+            <span>Status</span>
+            <select id="quickFilterStatus">
+              <option value="">Todos</option>
+              <option value="OK">OK</option>
+              <option value="Não OK">Não OK</option>
+              <option value="DCR">DCR</option>
+              <option value="Status não mapeado">Status não mapeado</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Teste</span>
+            <select id="quickFilterTest"><option value="">Todos</option></select>
+          </label>
+        </div>
+      </section>
+
+      <section class="section" id="chartsSection" aria-label="Gráficos">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Visualização</p>
+            <h2>Gráficos</h2>
+          </div>
+          <div class="section-heading-actions">
+            <button class="secondary-btn section-collapse-btn" type="button" data-collapse-target="chartsSection" aria-expanded="true">Recolher</button>
+          </div>
+        </div>
+        <div class="charts-grid">
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Status</h3>
+              <span>Distribuição por status</span>
+            </div>
+            <div id="statusChart" class="chart"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Etapas</h3>
+              <span>Distribuição por etapa de falha</span>
+            </div>
+            <div id="stageChart" class="chart"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Mês</h3>
+              <span>Testes por mês</span>
+            </div>
+            <div id="monthChart" class="chart"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Ciclo</h3>
+              <span>Testes por ciclo</span>
+            </div>
+            <div id="cycleChart" class="chart"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Marcas críticas</h3>
+              <span>Top marcas com mais Não OK</span>
+            </div>
+            <div id="brandNotOkChart" class="chart"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>QAs</h3>
+              <span>Top QAs por volume</span>
+            </div>
+            <div id="qaChart" class="chart"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="criticalSection">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Criticidade</p>
+            <h2>Marcas Críticas</h2>
+          </div>
+          <div class="section-heading-actions">
+            <button class="secondary-btn section-collapse-btn" type="button" data-collapse-target="criticalSection" aria-expanded="true">Recolher</button>
+          </div>
+        </div>
+        <div id="criticalBrands" class="panel"></div>
+      </section>
+
+      <section class="section" id="tableSection">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Análise</p>
+            <h2>Tabela detalhada</h2>
+          </div>
+          <div class="section-heading-actions">
+            <div class="section-hint" id="filteredCount"></div>
+            <button class="secondary-btn section-collapse-btn" type="button" data-collapse-target="tableSection" aria-expanded="true">Recolher</button>
+          </div>
+        </div>
+        <div class="table-panel panel">
+          <div class="table-toolbar">
+            <p>Busca por Id, Marca e QA, com ordenação por data, ciclo ou status.</p>
+            <div class="table-toolbar-actions">
+              <label class="field compact">
+                <span>Linhas por página</span>
+                <select id="pageSizeSelect">
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th data-sort="idTeste">Id Teste</th>
+                  <th data-sort="marca">Marca</th>
+                  <th data-sort="dataExecucao">Data de execução</th>
+                  <th data-sort="ciclo">Ciclo</th>
+                  <th>Plano de testes</th>
+                  <th>Teste</th>
+                  <th>Resultado teste</th>
+                  <th data-sort="statusTeste">Status teste</th>
+                  <th>Responsável</th>
+                  <th>Longa duração</th>
+                  <th>Cliente</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+          <div class="table-pagination">
+            <button class="secondary-btn" id="prevPageBtn" type="button">Anterior</button>
+            <div id="paginationInfo" class="pagination-info"></div>
+            <button class="secondary-btn" id="nextPageBtn" type="button">Próxima</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="validationSection">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Qualidade</p>
+            <h2>Alertas de validação</h2>
+          </div>
+          <div class="section-heading-actions">
+            <button class="secondary-btn section-collapse-btn" type="button" data-collapse-target="validationSection" aria-expanded="true">Recolher</button>
+          </div>
+        </div>
+        <div class="validation-grid">
+          <article class="panel validation-card">
+            <h3>Resumo da base</h3>
+            <div id="validationSummary"></div>
+          </article>
+          <article class="panel validation-card">
+            <h3>Problemas encontrados</h3>
+            <div id="validationIssues"></div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>
