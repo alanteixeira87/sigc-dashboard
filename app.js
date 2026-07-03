@@ -35,6 +35,7 @@ const SUPABASE_CONFIG = {
 
 const LOCAL_CACHE_KEY = 'sigc-dashboard-records-v1';
 const LOCAL_CACHE_META_KEY = 'sigc-dashboard-records-meta-v1';
+const THEME_STORAGE_KEY = 'sigc-dashboard-theme';
 
 const REQUIRED_COLUMNS = [
   'Id Teste',
@@ -72,6 +73,7 @@ const els = {
   appShell: document.querySelector('.app-shell'),
   sidebar: document.querySelector('.sidebar'),
   sidebarToggle: document.getElementById('sidebarToggle'),
+  themeToggle: document.getElementById('themeToggle'),
   fileInput: document.getElementById('fileInput'),
   selectFilesBtn: document.getElementById('selectFilesBtn'),
   loadSampleBtn: document.getElementById('loadSampleBtn'),
@@ -1599,6 +1601,34 @@ function wireNavigation() {
   });
 }
 
+function applyTheme(theme) {
+  const nextTheme = theme === 'light' ? 'light' : 'dark';
+  document.body.classList.toggle('theme-light', nextTheme === 'light');
+  document.body.classList.toggle('theme-dark', nextTheme === 'dark');
+
+  if (els.themeToggle) {
+    const isLight = nextTheme === 'light';
+    els.themeToggle.setAttribute('aria-pressed', String(isLight));
+    const icon = els.themeToggle.querySelector('.theme-toggle-icon');
+    const label = els.themeToggle.querySelector('.theme-toggle-label');
+    if (icon) icon.textContent = isLight ? '☾' : '☀';
+    if (label) label.textContent = isLight ? 'Modo escuro' : 'Modo claro';
+  }
+
+  localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+}
+
+function wireThemeToggle() {
+  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  applyTheme(savedTheme || 'dark');
+
+  if (!els.themeToggle) return;
+  els.themeToggle.addEventListener('click', () => {
+    const nextTheme = document.body.classList.contains('theme-light') ? 'dark' : 'light';
+    applyTheme(nextTheme);
+  });
+}
+
 function syncSidebarState() {
   if (!els.appShell || !els.sidebarToggle) return;
   els.appShell.classList.toggle('sidebar-collapsed', state.sidebarCollapsed);
@@ -1712,6 +1742,7 @@ function wireImport() {
 }
 
 function initialize() {
+  wireThemeToggle();
   wireImport();
   wireFilters();
   wirePagination();

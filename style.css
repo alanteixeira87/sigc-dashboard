@@ -3,6 +3,11 @@
   --bg-soft: #111826;
   --bg-panel: rgba(17, 24, 38, 0.9);
   --bg-panel-2: rgba(19, 28, 44, 0.96);
+  --field-bg: linear-gradient(180deg, rgba(7, 11, 18, 0.98), rgba(15, 22, 34, 0.98));
+  --table-head-bg: rgba(10, 15, 23, 0.96);
+  --row-hover: rgba(255, 255, 255, 0.03);
+  --soft-fill: rgba(255, 255, 255, 0.04);
+  --focus-ring: rgba(124, 92, 255, 0.15);
   --line: rgba(255, 255, 255, 0.08);
   --line-strong: rgba(255, 255, 255, 0.14);
   --text: #e8edf6;
@@ -16,6 +21,28 @@
   --radius-xl: 28px;
   --radius-lg: 20px;
   --radius-md: 14px;
+}
+
+body.theme-light {
+  --bg: #f4f7fb;
+  --bg-soft: #eef4f7;
+  --bg-panel: #ffffff;
+  --bg-panel-2: #ffffff;
+  --field-bg: #ffffff;
+  --table-head-bg: #f5f8fb;
+  --row-hover: rgba(0, 180, 160, 0.06);
+  --soft-fill: rgba(7, 27, 43, 0.04);
+  --focus-ring: rgba(0, 168, 157, 0.16);
+  --line: rgba(22, 42, 58, 0.12);
+  --line-strong: rgba(22, 42, 58, 0.2);
+  --text: #172b3a;
+  --muted: #657789;
+  --accent: #00a89d;
+  --accent-2: #1f7ae0;
+  --good: #12a66a;
+  --warn: #c68414;
+  --bad: #d94c5c;
+  --shadow: 0 18px 44px rgba(23, 43, 58, 0.1);
 }
 
 * {
@@ -34,6 +61,12 @@ body {
     radial-gradient(circle at bottom right, rgba(57, 208, 183, 0.14), transparent 22%),
     linear-gradient(160deg, #081019 0%, #0d1320 48%, #0a0f16 100%);
   font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+body.theme-light {
+  background:
+    radial-gradient(circle at top left, rgba(0, 168, 157, 0.12), transparent 26%),
+    linear-gradient(180deg, #f7fbfd 0%, #eef5f8 100%);
 }
 
 button,
@@ -79,6 +112,36 @@ button {
   transition: padding 0.22s ease;
   overflow: visible;
   position: relative;
+}
+
+body.theme-light .sidebar {
+  background: rgba(255, 255, 255, 0.86);
+}
+
+body.theme-light .sidebar-toggle {
+  color: #ffffff;
+  background: linear-gradient(180deg, #00a89d, #1f7ae0);
+  border-color: rgba(31, 122, 224, 0.24);
+}
+
+body.theme-light .drop-zone {
+  border-color: rgba(0, 168, 157, 0.26);
+  background:
+    radial-gradient(circle at top, rgba(0, 168, 157, 0.1), transparent 42%),
+    #f8fcfd;
+}
+
+body.theme-light .primary-btn {
+  box-shadow: 0 12px 24px rgba(0, 168, 157, 0.2);
+}
+
+body.theme-light .metric-card,
+body.theme-light .panel,
+body.theme-light .table-panel,
+body.theme-light .import-panel,
+body.theme-light .filters-panel,
+body.theme-light .quick-filters-panel {
+  box-shadow: var(--shadow);
 }
 
 .sidebar-toggle {
@@ -160,7 +223,7 @@ button {
 .nav-link:hover,
 .nav-link.active {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--soft-fill);
   border-color: var(--line);
 }
 
@@ -168,8 +231,44 @@ button {
   margin-top: auto;
   padding: 16px;
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--soft-fill);
   border: 1px solid var(--line);
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  color: var(--text);
+  background: var(--soft-fill);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
+}
+
+.theme-toggle-icon {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: white;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  font-size: 0.88rem;
+  line-height: 1;
+}
+
+.theme-toggle-label {
+  font-weight: 700;
 }
 
 .nav-label {
@@ -188,10 +287,15 @@ button {
 
 .app-shell.sidebar-collapsed .brand,
 .app-shell.sidebar-collapsed .sidebar-footer,
-.app-shell.sidebar-collapsed .nav-label {
+.app-shell.sidebar-collapsed .nav-label,
+.app-shell.sidebar-collapsed .theme-toggle-label {
   opacity: 0;
   transform: translateX(-10px);
   pointer-events: none;
+}
+
+.app-shell.sidebar-collapsed .theme-toggle {
+  padding: 10px;
 }
 
 .app-shell.sidebar-collapsed .brand,
@@ -243,7 +347,7 @@ button {
 .table-panel {
   border-radius: var(--radius-xl);
   border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(17, 24, 38, 0.92), rgba(11, 16, 25, 0.92));
+  background: var(--bg-panel);
   box-shadow: var(--shadow);
 }
 
@@ -308,7 +412,7 @@ button {
   border: 1px dashed rgba(148, 163, 184, 0.35);
   background:
     radial-gradient(circle at top, rgba(124, 92, 255, 0.12), transparent 42%),
-    rgba(255, 255, 255, 0.02);
+    var(--soft-fill);
   transition: 0.2s ease;
   text-align: center;
 }
@@ -356,7 +460,7 @@ button {
 
 .primary-btn {
   color: white;
-  background: linear-gradient(135deg, var(--accent), #4d8cff);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
   box-shadow: 0 12px 26px rgba(124, 92, 255, 0.28);
 }
 
@@ -366,12 +470,12 @@ button {
 
 .secondary-btn {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--soft-fill);
   border: 1px solid var(--line);
 }
 
 .secondary-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--row-hover);
 }
 
 .secondary-btn:disabled,
@@ -386,7 +490,7 @@ button {
   padding: 12px 14px;
   border-radius: 14px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--soft-fill);
   text-align: center;
 }
 
@@ -446,7 +550,7 @@ button {
 .metric-card {
   padding: 18px;
   border-radius: var(--radius-lg);
-  background: linear-gradient(180deg, rgba(17, 24, 38, 0.96), rgba(11, 16, 25, 0.96));
+  background: var(--bg-panel);
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
   min-height: 120px;
@@ -513,7 +617,7 @@ button {
 }
 
 .chart-row-clickable:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--row-hover);
   transform: translateY(-1px);
 }
 
@@ -528,7 +632,7 @@ button {
 .chart-track {
   height: 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--soft-fill);
   overflow: hidden;
 }
 
@@ -554,7 +658,7 @@ button {
   padding: 20px;
   border-radius: var(--radius-xl);
   border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(17, 24, 38, 0.9), rgba(11, 16, 25, 0.94));
+  background: var(--bg-panel);
   box-shadow: var(--shadow);
 }
 
@@ -562,7 +666,7 @@ button {
   padding: 20px;
   border-radius: var(--radius-xl);
   border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(17, 24, 38, 0.88), rgba(11, 16, 25, 0.92));
+  background: var(--bg-panel);
   box-shadow: var(--shadow);
 }
 
@@ -594,8 +698,8 @@ button {
   width: 100%;
   padding: 12px 13px;
   border-radius: 14px;
-  color: #f5f8ff;
-  background: linear-gradient(180deg, rgba(7, 11, 18, 0.98), rgba(15, 22, 34, 0.98));
+  color: var(--text);
+  background: var(--field-bg);
   border: 1px solid var(--line);
   outline: none;
 }
@@ -607,9 +711,13 @@ button {
   color-scheme: dark;
 }
 
+body.theme-light .field select {
+  color-scheme: light;
+}
+
 .field select option {
-  background: #0d1420;
-  color: #f5f8ff;
+  background: var(--bg-panel);
+  color: var(--text);
 }
 
 .field input::placeholder {
@@ -618,8 +726,8 @@ button {
 
 .field input:focus,
 .field select:focus {
-  border-color: rgba(124, 92, 255, 0.8);
-  box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--focus-ring);
 }
 
 .table-panel {
@@ -678,7 +786,7 @@ thead th {
   top: 0;
   z-index: 1;
   padding: 14px 12px;
-  background: rgba(10, 15, 23, 0.96);
+  background: var(--table-head-bg);
   color: var(--muted);
   text-align: left;
   font-size: 0.82rem;
@@ -689,13 +797,13 @@ thead th {
 
 tbody td {
   padding: 13px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--line);
   color: var(--text);
   font-size: 0.92rem;
 }
 
 tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--row-hover);
 }
 
 .status-pill {
@@ -861,7 +969,8 @@ tbody tr:hover {
 
   .app-shell.sidebar-collapsed .brand,
   .app-shell.sidebar-collapsed .sidebar-footer,
-  .app-shell.sidebar-collapsed .nav-label {
+  .app-shell.sidebar-collapsed .nav-label,
+  .app-shell.sidebar-collapsed .theme-toggle-label {
     opacity: 1;
     transform: none;
     pointer-events: auto;
