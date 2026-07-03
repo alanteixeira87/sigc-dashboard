@@ -23,9 +23,7 @@
 
       <nav class="sidebar-nav">
         <button class="nav-link active" data-scroll-target="overviewSection"><span class="nav-label">Visão geral</span></button>
-        <button class="nav-link" data-scroll-target="criticalSection"><span class="nav-label">Marcas Críticas</span></button>
         <button class="nav-link" data-scroll-target="tableSection"><span class="nav-label">Tabela Analítica</span></button>
-        <button class="nav-link" data-scroll-target="validationSection"><span class="nav-label">Validação</span></button>
       </nav>
 
       <div class="sidebar-footer">
@@ -35,14 +33,6 @@
 
     <main class="main">
       <header class="hero">
-        <div class="hero-copy">
-          <p class="eyebrow">MVP offline para testes operacionais</p>
-          <h1>Importe planilhas e veja a leitura pronta para análise em segundos.</h1>
-          <p class="hero-text">
-            A base é reconhecida, normalizada e transformada em métricas, gráficos, filtros e tabela detalhada sem backend.
-          </p>
-        </div>
-
         <div class="import-panel">
           <div class="drop-zone" id="dropZone">
             <input id="fileInput" type="file" accept=".csv,.xlsx,.xls,.json" multiple hidden>
@@ -272,19 +262,6 @@
         </div>
       </section>
 
-      <section class="section" id="criticalSection">
-        <div class="section-heading">
-          <div>
-            <p class="section-kicker">Criticidade</p>
-            <h2>Marcas Críticas</h2>
-          </div>
-          <div class="section-heading-actions">
-            <button class="secondary-btn section-collapse-btn" type="button" data-collapse-target="criticalSection" aria-expanded="true">Recolher</button>
-          </div>
-        </div>
-        <div id="criticalBrands" class="panel"></div>
-      </section>
-
       <section class="section" id="tableSection">
         <div class="section-heading">
           <div>
@@ -338,27 +315,6 @@
         </div>
       </section>
 
-      <section class="section" id="validationSection">
-        <div class="section-heading">
-          <div>
-            <p class="section-kicker">Qualidade</p>
-            <h2>Alertas de validação</h2>
-          </div>
-          <div class="section-heading-actions">
-            <button class="secondary-btn section-collapse-btn" type="button" data-collapse-target="validationSection" aria-expanded="true">Recolher</button>
-          </div>
-        </div>
-        <div class="validation-grid">
-          <article class="panel validation-card">
-            <h3>Resumo da base</h3>
-            <div id="validationSummary"></div>
-          </article>
-          <article class="panel validation-card">
-            <h3>Problemas encontrados</h3>
-            <div id="validationIssues"></div>
-          </article>
-        </div>
-      </section>
     </main>
   </div>
 

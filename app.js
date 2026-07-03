@@ -1164,6 +1164,8 @@ function renderCharts(records) {
 }
 
 function renderCriticalBrands(records) {
+  if (!els.criticalBrands) return;
+
   const metrics = buildBrandMetrics(records).slice(0, 12);
   if (!metrics.length) {
     els.criticalBrands.innerHTML = '<div class="empty-state">Importe uma planilha para ver a criticidade das marcas.</div>';
@@ -1215,6 +1217,8 @@ function classificationClass(classification) {
 }
 
 function renderValidation() {
+  if (!els.validationSummary || !els.validationIssues) return;
+
   if (!state.validation) {
     els.validationSummary.innerHTML = '<div class="empty-state">Aguarde a primeira importação.</div>';
     els.validationIssues.innerHTML = '<div class="empty-state">Nenhuma validação ainda.</div>';
