@@ -33,6 +33,9 @@ const SUPABASE_CONFIG = {
   table: 'dashboard_registros'
 };
 
+const LOCAL_CACHE_KEY = 'sigc-dashboard-records-v1';
+const LOCAL_CACHE_META_KEY = 'sigc-dashboard-records-meta-v1';
+
 const REQUIRED_COLUMNS = [
   'Id Teste',
   'Marca',
@@ -636,6 +639,66 @@ function chunkArray(items, size) {
   return chunks;
 }
 
+function applyRecords(records, validationOverrides = {}) {
+  state.records = records;
+  state.validation = {
+    importedFiles: 0,
+    importedLines: records.length,
+    ignoredLines: 0,
+    issues: [],
+    records,
+    ...validationOverrides
+  };
+
+  seedFiltersFromRecords(state.records);
+  applyFilters();
+  els.exportCsvBtn.disabled = !state.records.length;
+  els.resetFiltersBtn.disabled = !state.records.length;
+  updateCloudButtons();
+}
+
+function saveRecordsToLocalCache(records, source = 'local') {
+  try {
+    localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(records));
+    localStorage.setItem(LOCAL_CACHE_META_KEY, JSON.stringify({
+      source,
+      total: records.length,
+      savedAt: new Date().toISOString()
+    }));
+  } catch (error) {
+    console.warn('Nao foi possivel salvar cache local:', error);
+  }
+}
+
+function getLocalCacheMeta() {
+  try {
+    return JSON.parse(localStorage.getItem(LOCAL_CACHE_META_KEY) || 'null');
+  } catch {
+    return null;
+  }
+}
+
+function loadRecordsFromLocalCache() {
+  try {
+    const raw = localStorage.getItem(LOCAL_CACHE_KEY);
+    if (!raw) return false;
+
+    const records = JSON.parse(raw);
+    if (!Array.isArray(records)) return false;
+
+    applyRecords(records);
+    const meta = getLocalCacheMeta();
+    const savedAt = meta?.savedAt
+      ? new Date(meta.savedAt).toLocaleString('pt-BR')
+      : 'data não informada';
+    setStatus(`Base local carregada com ${records.length} registro(s). Última atualização: ${savedAt}.`);
+    return true;
+  } catch (error) {
+    console.warn('Nao foi possivel carregar cache local:', error);
+    return false;
+  }
+}
+
 async function saveRecordsToSupabase() {
   if (!state.records.length) return;
 
@@ -652,7 +715,8 @@ async function saveRecordsToSupabase() {
       if (error) throw error;
     }
 
-    setStatus(`Base salva no Supabase com ${rows.length} registro(s).`);
+    saveRecordsToLocalCache(state.records, 'supabase-save');
+    setStatus(`Base salva no Supabase e mantida localmente com ${rows.length} registro(s).`);
   } catch (error) {
     setStatus(`Não foi possível salvar no Supabase: ${error.message}`);
   }
@@ -679,19 +743,9 @@ async function loadRecordsFromSupabase() {
       from += pageSize;
     }
 
-    state.records = records;
-    state.validation = {
-      importedFiles: 0,
-      importedLines: records.length,
-      ignoredLines: 0,
-      issues: [],
-      records
-    };
-
-    seedFiltersFromRecords(state.records);
-    applyFilters();
-    updateCloudButtons();
-    setStatus(`Base carregada do Supabase com ${records.length} registro(s).`);
+    applyRecords(records);
+    saveRecordsToLocalCache(records, 'supabase-load');
+    setStatus(`Base carregada do Supabase e salva localmente com ${records.length} registro(s).`);
   } catch (error) {
     setStatus(`Não foi possível carregar do Supabase: ${error.message}`);
   }
@@ -719,20 +773,17 @@ async function handleFiles(fileList, replace = true) {
   const importedLines = parsedFiles.reduce((total, entry) => total + entry.importedLines, 0);
   const ignoredLines = parsedFiles.reduce((total, entry) => total + entry.ignoredLines, 0);
 
-  state.records = replace ? allRecords : [...state.records, ...allRecords];
-  state.validation = {
+  const records = replace ? allRecords : [...state.records, ...allRecords];
+  applyRecords(records, {
     importedFiles: parsedFiles.length,
     importedLines,
     ignoredLines,
-    issues: allIssues,
-    records: state.records
-  };
-
-  seedFiltersFromRecords(state.records);
-  applyFilters();
+    issues: allIssues
+  });
+  saveRecordsToLocalCache(state.records, 'file-import');
 
   const fileNames = parsedFiles.map((entry) => entry.file.name).join(', ');
-  setStatus(`Importados ${state.records.length} registros válidos de ${fileNames}.`);
+  setStatus(`Importados ${state.records.length} registros válidos de ${fileNames}. Base mantida localmente.`);
   els.exportCsvBtn.disabled = !state.records.length;
   els.resetFiltersBtn.disabled = !state.records.length;
   updateCloudButtons();
@@ -1702,6 +1753,7 @@ function initialize() {
   renderValidation();
   renderTable([]);
   updateCloudButtons();
+  loadRecordsFromLocalCache();
 }
 
 initialize();
