@@ -1127,10 +1127,10 @@ function renderSummary(metrics) {
     ['Total de registros válidos', metrics.valid, 'Linhas carregadas com sucesso'],
     ['Total de registros ignorados', metrics.ignored, 'Linhas vazias ou duplicadas'],
     ['Total de testes OK', metrics.ok, `${metrics.okRate.toFixed(1)}% da base`],
-    ['Total de testes Não OK', metrics.noOk, `${metrics.noOkRate.toFixed(1)}% da base`],
+    ['Total de testes NOK', metrics.noOk, `${metrics.noOkRate.toFixed(1)}% da base`],
     ['Total de testes DCR', metrics.dcr, `${metrics.dcrRate.toFixed(1)}% da base`],
     ['Percentual de OK', `${metrics.successRate.toFixed(1)}%`, 'Taxa de sucesso'],
-    ['Percentual de falha', `${metrics.failureRate.toFixed(1)}%`, 'Não OK + DCR'],
+    ['Percentual de falha', `${metrics.failureRate.toFixed(1)}%`, 'NOK + DCR'],
     ['Testes longa duração', metrics.longTrue, 'Longa duração = Sim'],
     ['Testes não longa duração', metrics.longFalse, 'Longa duração = Não']
   ];
@@ -1177,7 +1177,7 @@ function renderChart(container, items, options = {}) {
 function renderCharts(records) {
   const statusItems = [
     { label: 'OK', value: records.filter((record) => record.statusTeste === 'OK').length },
-    { label: 'Não OK', value: records.filter((record) => record.statusTeste === 'Não OK').length },
+    { label: 'NOK', filterValue: 'Não OK', value: records.filter((record) => record.statusTeste === 'Não OK').length },
     { label: 'DCR', value: records.filter((record) => record.statusTeste === 'DCR').length }
   ];
 
@@ -1189,10 +1189,10 @@ function renderCharts(records) {
   renderChart(els.statusChart, statusItems, {
     tone: (item) => {
       if (item.label === 'OK') return 'good';
-      if (item.label === 'Não OK') return 'bad';
+      if (item.label === 'NOK') return 'bad';
       return 'warn';
     },
-    action: (item) => ({ kind: 'status', value: item.label })
+    action: (item) => ({ kind: 'status', value: item.filterValue || item.label })
   });
 
   renderChart(els.stageChart, stageItems, {
@@ -1229,9 +1229,9 @@ function renderCriticalBrands(records) {
           <th>Marca</th>
           <th>Total</th>
           <th>OK</th>
-          <th>Não OK</th>
+          <th>NOK</th>
           <th>DCR</th>
-          <th>Taxa de Não OK</th>
+          <th>Taxa de NOK</th>
           <th>Principal etapa de falha</th>
           <th>Índice de criticidade</th>
           <th>Classificação</th>
@@ -1354,7 +1354,7 @@ function renderTable(records) {
       <td>${escapeHtml(record.planoTeste || 'Sem plano de teste')}</td>
       <td>${escapeHtml(record.teste || 'Sem teste informado')}</td>
       <td>${escapeHtml(record.resultadoTeste || 'Sem etapa informada')}</td>
-      <td><span class="status-pill ${STATUS_CLASS[record.statusTeste] || STATUS_CLASS['Status não mapeado']}">${escapeHtml(record.statusTeste)}</span></td>
+      <td><span class="status-pill ${STATUS_CLASS[record.statusTeste] || STATUS_CLASS['Status não mapeado']}">${escapeHtml(record.statusTeste === 'Não OK' ? 'NOK' : record.statusTeste)}</span></td>
       <td>${escapeHtml(record.responsavelTeste)}</td>
       <td>${record.longaDuracao ? 'Sim' : 'Não'}</td>
     </tr>
@@ -1666,6 +1666,15 @@ function removeClientFromRecordsView() {
   if (clientHeader?.textContent.trim() === 'Cliente') clientHeader.remove();
 }
 
+function applyCompactStatusLabels() {
+  [els.filterStatus, els.quickFilterStatus].forEach((select) => {
+    const option = select?.querySelector('option[value="Não OK"]');
+    if (option) option.textContent = 'NOK';
+  });
+  const criticalBrandSubtitle = document.querySelector('#brandNotOkChart')?.previousElementSibling?.querySelector('span');
+  if (criticalBrandSubtitle) criticalBrandSubtitle.textContent = 'Maior volume de NOK';
+}
+
 function applyTheme(theme) {
   const nextTheme = theme === 'light' ? 'light' : 'dark';
   document.body.classList.toggle('theme-light', nextTheme === 'light');
@@ -1810,6 +1819,7 @@ function wireImport() {
 
 function initialize() {
   removeClientFromRecordsView();
+  applyCompactStatusLabels();
   wireThemeToggle();
   wireImport();
   wireFilters();
