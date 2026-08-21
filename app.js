@@ -896,6 +896,7 @@ function sortRecords(records) {
 
 function computeMetrics(records) {
   const total = records.length;
+  const executed = records.filter((record) => Boolean(record.dataExecucao)).length;
   const byStatus = groupCount(records, (record) => record.statusTeste);
   const ok = byStatus.OK || 0;
   const noOk = byStatus['Não OK'] || 0;
@@ -912,17 +913,18 @@ function computeMetrics(records) {
 
   return {
     total,
+    executed,
     valid: total,
     ignored: state.validation?.ignoredLines ?? 0,
     ok,
     noOk,
     dcr,
     unknown,
-    successRate: total ? (ok / total) * 100 : 0,
-    failureRate: total ? ((noOk + dcr) / total) * 100 : 0,
-    okRate: total ? (ok / total) * 100 : 0,
-    noOkRate: total ? (noOk / total) * 100 : 0,
-    dcrRate: total ? (dcr / total) * 100 : 0,
+    successRate: executed ? (ok / executed) * 100 : 0,
+    failureRate: executed ? ((noOk + dcr) / executed) * 100 : 0,
+    okRate: executed ? (ok / executed) * 100 : 0,
+    noOkRate: executed ? (noOk / executed) * 100 : 0,
+    dcrRate: executed ? (dcr / executed) * 100 : 0,
     brands: brands.size,
     qas: qas.size,
     cycles: cycles.size,
@@ -1127,16 +1129,11 @@ function buildQaCounts(records) {
 
 function renderSummary(metrics) {
   const cards = [
-    ['Total de registros importados', metrics.total, 'Base atual filtrada'],
-    ['Total de registros válidos', metrics.valid, 'Linhas carregadas com sucesso'],
-    ['Total de registros ignorados', metrics.ignored, 'Linhas vazias ou duplicadas'],
-    ['Total de testes OK', metrics.ok, `${metrics.okRate.toFixed(1)}% da base`],
-    ['Total de testes NOK', metrics.noOk, `${metrics.noOkRate.toFixed(1)}% da base`],
-    ['Total de testes DCR', metrics.dcr, `${metrics.dcrRate.toFixed(1)}% da base`],
-    ['Percentual de OK', `${metrics.successRate.toFixed(1)}%`, 'Taxa de sucesso'],
-    ['Percentual de falha', `${metrics.failureRate.toFixed(1)}%`, 'NOK + DCR'],
-    ['Testes longa duração', metrics.longTrue, 'Longa duração = Sim'],
-    ['Testes não longa duração', metrics.longFalse, 'Longa duração = Não']
+    ['Testes executados', metrics.executed ?? 0, `${metrics.total - (metrics.executed ?? 0)} sem execução`],
+    ['Testes OK', metrics.ok, `${metrics.okRate.toFixed(1)}% da seleção`],
+    ['Testes NOK', metrics.noOk, `${metrics.noOkRate.toFixed(1)}% da seleção`],
+    ['Testes DCR', metrics.dcr, `${metrics.dcrRate.toFixed(1)}% da seleção`],
+    ['Taxa de sucesso', `${metrics.successRate.toFixed(1)}%`, 'Percentual de testes OK']
   ];
 
   els.summaryCards.innerHTML = cards.map(([label, value, subtitle]) => `
@@ -1403,8 +1400,68 @@ function applyFilters() {
   renderCriticalBrands(filtered);
   renderValidation();
   renderTable(filtered);
+  renderActiveFilters();
 
   els.filteredCount.textContent = `${formatValue(filtered.length)} registro(s) visível(is) de ${formatValue(state.records.length)} importado(s).`;
+}
+
+const ACTIVE_FILTER_CONFIG = {
+  execution: { label: 'Execução', format: (value) => value === 'executed' ? 'Executados' : 'Sem execução', controls: () => [els.filterExecution] },
+  dateFrom: { label: 'Desde', controls: () => [els.filterDateFrom] },
+  dateTo: { label: 'Até', controls: () => [els.filterDateTo] },
+  month: { label: 'Mês', controls: () => [els.filterMonth] },
+  cycle: { label: 'Ciclo', controls: () => [els.filterCycle, els.quickFilterCycle] },
+  brand: { label: 'Marca', controls: () => [els.filterBrand, els.quickFilterBrand] },
+  qa: { label: 'QA', controls: () => [els.filterQa, els.quickFilterQa] },
+  status: { label: 'Status', format: (value) => value === 'Não OK' ? 'NOK' : value, controls: () => [els.filterStatus, els.quickFilterStatus] },
+  stage: { label: 'Resultado', controls: () => [els.filterStage] },
+  longa: { label: 'Longa duração', format: (value) => value === 'true' ? 'Sim' : 'Não', controls: () => [els.filterLonga] },
+  plan: { label: 'Plano', controls: () => [els.filterPlan] },
+  test: { label: 'Teste', controls: () => [els.filterTest, els.quickFilterTest] },
+  id: { label: 'ID', controls: () => [els.filterId] },
+  brandSearch: { label: 'Busca de marca', controls: () => [els.filterBrandSearch] },
+  qaSearch: { label: 'Busca de QA', controls: () => [els.filterQaSearch] }
+};
+
+function renderActiveFilters() {
+  const container = document.getElementById('activeFilters');
+  if (!container) return;
+
+  const activeEntries = Object.entries(ACTIVE_FILTER_CONFIG)
+    .filter(([key]) => state.filters[key] !== '')
+    .map(([key, config]) => {
+      const rawValue = state.filters[key];
+      const displayValue = config.format ? config.format(rawValue) : rawValue;
+      return `<button class="filter-chip" type="button" data-clear-filter="${key}" aria-label="Remover filtro ${escapeHtml(config.label)}: ${escapeHtml(displayValue)}"><span>${escapeHtml(config.label)}:</span> ${escapeHtml(displayValue)} <b aria-hidden="true">×</b></button>`;
+    });
+
+  container.innerHTML = activeEntries.length
+    ? `<div class="active-filters-label"><span>Filtros ativos</span><button type="button" data-clear-all-filters>Limpar todos</button></div><div class="filter-chips">${activeEntries.join('')}</div>`
+    : '<span class="no-active-filters">Nenhum filtro aplicado</span>';
+}
+
+function createActiveFiltersBar() {
+  const tablePanel = document.querySelector('#tableSection .table-panel');
+  if (!tablePanel || document.getElementById('activeFilters')) return;
+  const container = document.createElement('div');
+  container.id = 'activeFilters';
+  container.className = 'active-filters';
+  container.setAttribute('aria-live', 'polite');
+  tablePanel.prepend(container);
+  container.addEventListener('click', (event) => {
+    const clearAllButton = event.target.closest('[data-clear-all-filters]');
+    if (clearAllButton) {
+      clearFilters();
+      return;
+    }
+    const chip = event.target.closest('[data-clear-filter]');
+    if (!chip) return;
+    const config = ACTIVE_FILTER_CONFIG[chip.dataset.clearFilter];
+    config?.controls().filter(Boolean).forEach((control) => { control.value = ''; });
+    state.currentPage = 1;
+    syncFiltersFromUI();
+    applyFilters();
+  });
 }
 
 function syncFiltersFromUI() {
@@ -1844,6 +1901,7 @@ function wireImport() {
 
 function initialize() {
   createExecutionFilter();
+  createActiveFiltersBar();
   removeClientFromRecordsView();
   applyCompactStatusLabels();
   wireThemeToggle();
