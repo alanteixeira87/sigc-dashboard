@@ -1588,11 +1588,17 @@ function handleTableSortingClicks() {
 }
 
 function wireNavigation() {
+  const quickFiltersSection = document.getElementById('quickFiltersSection');
+  const advancedFiltersSection = document.getElementById('filtersSection');
+  if (quickFiltersSection && advancedFiltersSection) {
+    advancedFiltersSection.insertAdjacentElement('beforebegin', quickFiltersSection);
+  }
+
   const viewConfig = {
     overview: {
       title: 'Visão geral',
-      description: 'Acompanhe os principais indicadores e refine a leitura com filtros rápidos.',
-      sections: ['overviewSection', 'quickFiltersSection']
+      description: 'Acompanhe os principais indicadores de qualidade da base selecionada.',
+      sections: ['overviewSection']
     },
     analytics: {
       title: 'Análises',
@@ -1601,8 +1607,8 @@ function wireNavigation() {
     },
     records: {
       title: 'Registros',
-      description: 'Consulte os dados detalhados e use filtros avançados quando necessário.',
-      sections: ['filtersSection', 'tableSection']
+      description: 'Consulte os dados detalhados e refine a listagem com filtros rápidos ou avançados.',
+      sections: ['quickFiltersSection', 'filtersSection', 'tableSection']
     }
   };
   const allSectionIds = Object.values(viewConfig).flatMap((view) => view.sections);
