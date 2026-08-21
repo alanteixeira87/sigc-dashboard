@@ -1336,7 +1336,7 @@ function renderTable(records) {
   if (!records.length) {
     els.tableBody.innerHTML = `
       <tr>
-        <td colspan="11">
+        <td colspan="10">
           <div class="empty-state">Nenhum registro corresponde aos filtros atuais.</div>
         </td>
       </tr>
@@ -1357,7 +1357,6 @@ function renderTable(records) {
       <td><span class="status-pill ${STATUS_CLASS[record.statusTeste] || STATUS_CLASS['Status não mapeado']}">${escapeHtml(record.statusTeste)}</span></td>
       <td>${escapeHtml(record.responsavelTeste)}</td>
       <td>${record.longaDuracao ? 'Sim' : 'Não'}</td>
-      <td>${escapeHtml(record.cliente)}</td>
     </tr>
   `).join('');
 
@@ -1655,6 +1654,12 @@ function wireNavigation() {
   activateView(localStorage.getItem('dashboard-active-view') || 'overview', false);
 }
 
+function removeClientFromRecordsView() {
+  els.filterClient?.closest('.field')?.remove();
+  const clientHeader = document.querySelector('#tableSection thead th:last-child');
+  if (clientHeader?.textContent.trim() === 'Cliente') clientHeader.remove();
+}
+
 function applyTheme(theme) {
   const nextTheme = theme === 'light' ? 'light' : 'dark';
   document.body.classList.toggle('theme-light', nextTheme === 'light');
@@ -1798,6 +1803,7 @@ function wireImport() {
 }
 
 function initialize() {
+  removeClientFromRecordsView();
   wireThemeToggle();
   wireImport();
   wireFilters();
