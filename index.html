@@ -6,15 +6,15 @@
   <title>SIGC · Visão geral</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css"><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="dashboard-tabs.css"><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body><div class="app-shell">
   <aside class="sidebar">
     <div class="sidebar-header"><div class="brand"><div class="brand-mark"><img src="assets/logo.avif?v=20260703" alt="SIGC"></div><div class="brand-copy"><strong>SIGC</strong><span>Quality insights</span></div></div><button class="sidebar-toggle icon-btn" id="sidebarToggle" type="button" aria-expanded="true" aria-label="Recolher menu"><span class="sidebar-toggle-icon" aria-hidden="true">‹</span></button></div>
-    <div class="nav-group"><span class="nav-caption">Workspace</span><nav class="sidebar-nav" aria-label="Navegação principal">
-      <button class="nav-link active" data-scroll-target="overviewSection"><span class="nav-icon">⌂</span><span class="nav-label">Visão geral</span></button>
-      <button class="nav-link" data-scroll-target="chartsSection"><span class="nav-icon">⌁</span><span class="nav-label">Análises</span></button>
-      <button class="nav-link" data-scroll-target="tableSection"><span class="nav-icon">▤</span><span class="nav-label">Registros</span></button>
+    <div class="nav-group"><span class="nav-caption">Workspace</span><nav class="sidebar-nav" aria-label="Navegação principal" role="tablist">
+      <button class="nav-link active" data-dashboard-tab="overview" role="tab" aria-selected="true"><span class="nav-icon">⌂</span><span class="nav-label">Visão geral</span></button>
+      <button class="nav-link" data-dashboard-tab="analytics" role="tab" aria-selected="false"><span class="nav-icon">⌁</span><span class="nav-label">Análises</span></button>
+      <button class="nav-link" data-dashboard-tab="records" role="tab" aria-selected="false"><span class="nav-icon">▤</span><span class="nav-label">Registros</span></button>
     </nav></div>
     <div class="sidebar-bottom"><div class="privacy-note"><span class="privacy-dot"></span><span>Processamento local e seguro</span></div><button class="theme-toggle" id="themeToggle" type="button" aria-pressed="true"><span class="theme-toggle-icon" aria-hidden="true">☾</span><span class="theme-toggle-label">Modo escuro</span></button></div>
   </aside>

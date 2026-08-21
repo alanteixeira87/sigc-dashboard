@@ -1,0 +1,37 @@
+/* Navegação contextual: reduz a densidade mostrando uma área de trabalho por vez. */
+.dashboard-view-hidden { display: none !important; }
+
+.view-switcher {
+  display: none;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.view-switcher .nav-link { justify-content: center; }
+.section-collapse-btn { min-width: 78px; }
+
+body[data-dashboard-view="overview"] #overviewSection,
+body[data-dashboard-view="overview"] #quickFiltersSection,
+body[data-dashboard-view="analytics"] #chartsSection,
+body[data-dashboard-view="records"] #filtersSection,
+body[data-dashboard-view="records"] #tableSection { animation: view-in .2s ease-out; }
+
+@keyframes view-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+  .view-switcher { display: flex; }
+  .sidebar-nav { display: none; }
+  .view-switcher .nav-link { display: flex; flex: 1; }
+  .view-switcher .nav-label { display: inline; }
+}
+
+@media (max-width: 560px) {
+  .view-switcher .nav-icon { display: none; }
+}

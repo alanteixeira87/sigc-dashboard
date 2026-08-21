@@ -89,9 +89,6 @@ const els = {
   cycleChart: document.getElementById('cycleChart'),
   brandNotOkChart: document.getElementById('brandNotOkChart'),
   qaChart: document.getElementById('qaChart'),
-  criticalBrands: document.getElementById('criticalBrands'),
-  validationSummary: document.getElementById('validationSummary'),
-  validationIssues: document.getElementById('validationIssues'),
   tableBody: document.getElementById('tableBody'),
   filteredCount: document.getElementById('filteredCount'),
   filterDateFrom: document.getElementById('filterDateFrom'),
@@ -1592,13 +1589,70 @@ function handleTableSortingClicks() {
 }
 
 function wireNavigation() {
-  document.querySelectorAll('.nav-link').forEach((button) => {
-    button.addEventListener('click', () => {
-      document.querySelectorAll('.nav-link').forEach((item) => item.classList.remove('active'));
-      button.classList.add('active');
-      document.getElementById(button.dataset.scrollTarget)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const viewConfig = {
+    overview: {
+      title: 'Visão geral',
+      description: 'Acompanhe os principais indicadores e refine a leitura com filtros rápidos.',
+      sections: ['overviewSection', 'quickFiltersSection']
+    },
+    analytics: {
+      title: 'Análises',
+      description: 'Explore distribuições, tendências e pontos críticos da base selecionada.',
+      sections: ['chartsSection']
+    },
+    records: {
+      title: 'Registros',
+      description: 'Consulte os dados detalhados e use filtros avançados quando necessário.',
+      sections: ['filtersSection', 'tableSection']
+    }
+  };
+  const allSectionIds = Object.values(viewConfig).flatMap((view) => view.sections);
+  const sidebarNav = document.querySelector('.sidebar-nav');
+  const topbar = document.querySelector('.topbar');
+  const pageTitle = topbar?.querySelector('h1');
+  const pageDescription = topbar?.querySelector('.page-description');
+  const breadcrumb = topbar?.querySelector('.breadcrumb');
+
+  if (sidebarNav && topbar && !document.querySelector('.view-switcher')) {
+    const mobileSwitcher = sidebarNav.cloneNode(true);
+    mobileSwitcher.className = 'view-switcher';
+    mobileSwitcher.setAttribute('aria-label', 'Alternar área do dashboard');
+    topbar.insertAdjacentElement('afterend', mobileSwitcher);
+  }
+
+  const activateView = (requestedView, persist = true) => {
+    const viewName = viewConfig[requestedView] ? requestedView : 'overview';
+    const activeView = viewConfig[viewName];
+    document.body.dataset.dashboardView = viewName;
+
+    allSectionIds.forEach((sectionId) => {
+      const section = document.getElementById(sectionId);
+      if (!section) return;
+      const isVisible = activeView.sections.includes(sectionId);
+      section.classList.toggle('dashboard-view-hidden', !isVisible);
+      section.setAttribute('aria-hidden', String(!isVisible));
     });
+
+    document.querySelectorAll('[data-dashboard-tab]').forEach((button) => {
+      const isActive = button.dataset.dashboardTab === viewName;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-selected', String(isActive));
+      button.tabIndex = isActive ? 0 : -1;
+    });
+
+    if (pageTitle) pageTitle.textContent = activeView.title;
+    if (pageDescription) pageDescription.textContent = activeView.description;
+    if (breadcrumb) breadcrumb.innerHTML = `Dashboard <span>/</span> ${activeView.title}`;
+    document.title = `SIGC · ${activeView.title}`;
+    if (persist) localStorage.setItem('dashboard-active-view', viewName);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  document.querySelectorAll('[data-dashboard-tab]').forEach((button) => {
+    button.addEventListener('click', () => activateView(button.dataset.dashboardTab));
   });
+
+  activateView(localStorage.getItem('dashboard-active-view') || 'overview', false);
 }
 
 function applyTheme(theme) {
