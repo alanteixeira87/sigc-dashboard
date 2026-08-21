@@ -1620,7 +1620,7 @@ function applyTheme(theme) {
 
 function wireThemeToggle() {
   const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-  applyTheme(savedTheme || 'dark');
+  applyTheme(savedTheme || 'light');
 
   if (!els.themeToggle) return;
   els.themeToggle.addEventListener('click', () => {
@@ -1673,6 +1673,8 @@ function wireSectionCollapseToggles() {
     } catch {
       state.sectionCollapsed = {};
     }
+  } else {
+    state.sectionCollapsed.filtersSection = true;
   }
 
   document.querySelectorAll('[data-collapse-target]').forEach((button) => {
