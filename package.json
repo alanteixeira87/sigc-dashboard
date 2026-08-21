@@ -1,0 +1,10 @@
+{
+  "name": "sigc-dashboard-automation",
+  "private": true,
+  "scripts": {
+    "sigc:discover": "node automation/discover-sigc-endpoint.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.55.0"
+  }
+}
