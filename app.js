@@ -723,7 +723,8 @@ async function saveRecordsToSupabase() {
   }
 }
 
-async function loadRecordsFromSupabase() {
+async function loadRecordsFromSupabase(options = {}) {
+  const { preserveLocalOnEmpty = false } = options;
   try {
     const client = getSupabaseClient();
     const records = [];
@@ -744,11 +745,22 @@ async function loadRecordsFromSupabase() {
       from += pageSize;
     }
 
+    if (!records.length && preserveLocalOnEmpty && state.records.length) {
+      setStatus('Supabase conectado, mas sem registros. A base local foi preservada; use “Salvar base” para enviá-la à nuvem.');
+      return false;
+    }
+
     applyRecords(records);
     saveRecordsToLocalCache(records, 'supabase-load');
     setStatus(`Base carregada do Supabase e salva localmente com ${records.length} registro(s).`);
+    return true;
   } catch (error) {
-    setStatus(`Não foi possível carregar do Supabase: ${error.message}`);
+    if (state.records.length) {
+      setStatus(`Modo local ativo com ${state.records.length} registro(s). A sincronização com o Supabase será tentada novamente no próximo acesso.`);
+    } else {
+      setStatus(`Não foi possível carregar do Supabase: ${error.message}`);
+    }
+    return false;
   }
 }
 
@@ -1947,6 +1959,7 @@ function initialize() {
   renderTable([]);
   updateCloudButtons();
   loadRecordsFromLocalCache();
+  loadRecordsFromSupabase({ preserveLocalOnEmpty: true });
 }
 
 initialize();
