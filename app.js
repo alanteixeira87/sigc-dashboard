@@ -9,6 +9,7 @@ const state = {
   sidebarCollapsed: false,
   sectionCollapsed: {},
   filters: {
+    execution: '',
     dateFrom: '',
     dateTo: '',
     month: '',
@@ -92,6 +93,7 @@ const els = {
   tableBody: document.getElementById('tableBody'),
   filteredCount: document.getElementById('filteredCount'),
   filterDateFrom: document.getElementById('filterDateFrom'),
+  filterExecution: null,
   filterDateTo: document.getElementById('filterDateTo'),
   filterMonth: document.getElementById('filterMonth'),
   filterCycle: document.getElementById('filterCycle'),
@@ -850,6 +852,8 @@ function populateSelect(select, values) {
 function getFilteredRecords() {
   const filters = state.filters;
   return state.records.filter((record) => {
+    if (filters.execution === 'executed' && !record.dataExecucao) return false;
+    if (filters.execution === 'pending' && record.dataExecucao) return false;
     if (filters.dateFrom && record.dataExecucao && record.dataExecucao < filters.dateFrom) return false;
     if (filters.dateTo && record.dataExecucao && record.dataExecucao > filters.dateTo) return false;
     if (filters.month && (!record.dataExecucao || record.dataExecucao.slice(0, 7) !== filters.month)) return false;
@@ -1404,6 +1408,7 @@ function applyFilters() {
 }
 
 function syncFiltersFromUI() {
+  state.filters.execution = els.filterExecution.value;
   state.filters.dateFrom = els.filterDateFrom.value;
   state.filters.dateTo = els.filterDateTo.value;
   state.filters.month = els.filterMonth.value;
@@ -1426,6 +1431,7 @@ function syncFiltersFromUI() {
 
 function wireFilters() {
   const inputs = [
+    els.filterExecution,
     els.filterDateFrom,
     els.filterDateTo,
     els.filterMonth,
@@ -1485,6 +1491,7 @@ function wirePagination() {
 
 function clearFilters() {
   [
+    els.filterExecution,
     els.filterDateFrom,
     els.filterDateTo,
     els.filterMonth,
@@ -1675,6 +1682,24 @@ function applyCompactStatusLabels() {
   if (criticalBrandSubtitle) criticalBrandSubtitle.textContent = 'Maior volume de NOK';
 }
 
+function createExecutionFilter() {
+  const filtersGrid = document.getElementById('filtersGrid');
+  if (!filtersGrid || document.getElementById('filterExecution')) return;
+
+  const field = document.createElement('label');
+  field.className = 'field';
+  field.innerHTML = `
+    <span>Execução</span>
+    <select id="filterExecution">
+      <option value="">Todos</option>
+      <option value="executed">Executados</option>
+      <option value="pending">Sem execução</option>
+    </select>
+  `;
+  filtersGrid.prepend(field);
+  els.filterExecution = field.querySelector('select');
+}
+
 function applyTheme(theme) {
   const nextTheme = theme === 'light' ? 'light' : 'dark';
   document.body.classList.toggle('theme-light', nextTheme === 'light');
@@ -1818,6 +1843,7 @@ function wireImport() {
 }
 
 function initialize() {
+  createExecutionFilter();
   removeClientFromRecordsView();
   applyCompactStatusLabels();
   wireThemeToggle();
